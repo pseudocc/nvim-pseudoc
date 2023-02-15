@@ -1,7 +1,18 @@
-local ts_indent = require 'nvim-treesitter.indent'
-
-local indent_fn = ts_indent.get_indent
 local M = {}
+
+local no_ts  = {
+  sh = true,
+  bash = true,
+}
+
+local function indent_fn(i)
+  local ft = vim.bo.filetype
+  if no_ts[ft] then
+    return vim.fn.indent(i)
+  end
+  local ts_indent = require 'nvim-treesitter.indent'
+  return ts_indent.get_indent(i)
+end
 
 function M.select_context(around)
   local curr = vim.fn.line('.')

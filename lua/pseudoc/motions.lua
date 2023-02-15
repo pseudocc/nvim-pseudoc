@@ -17,19 +17,20 @@ end
 function M.select_context(around)
   local curr = vim.fn.line('.')
   local indent = indent_fn(curr)
+  local builder = {}
 
   local k = 1
   while curr - k > 0 and indent_fn(curr - k) >= indent do
     k = k + 1
   end
 
-  vim.cmd [[normal! v]]
+  table.insert(builder, [[normal! v]])
   if around then
-    vim.api.nvim_input(tostring(k) .. 'k$')
+    table.insert(builder, tostring(k) .. 'k$')
   elseif k > 1 then
-    vim.api.nvim_input(tostring(k - 1) .. 'k^')
+    table.insert(builder, tostring(k - 1) .. 'k^')
   else
-    vim.api.nvim_input('^')
+    table.insert(builder, '^')
   end
 
   local j = 1
@@ -38,20 +39,22 @@ function M.select_context(around)
     j = j + 1
   end
 
-  vim.api.nvim_input('o')
+  table.insert(builder, 'o')
   if around then
     if indent_fn(curr + j) > 0 then
-      vim.api.nvim_input(tostring(j) .. 'j^h')
+      table.insert(builder, tostring(j) .. 'j^h')
     elseif j > 1 then
-      vim.api.nvim_input(tostring(j - 1) .. 'j$')
+      table.insert(builder, tostring(j - 1) .. 'j$')
     else
-      vim.api.nvim_input('$')
+      table.insert(builder, '$')
     end
   elseif j > 1 then
-    vim.api.nvim_input(tostring(j - 1) .. 'j$h')
+    table.insert(builder, tostring(j - 1) .. 'j$h')
   else
-    vim.api.nvim_input('$h')
+    table.insert(builder, '$h')
   end
+
+  vim.cmd(table.concat(builder))
 end
 
 return M

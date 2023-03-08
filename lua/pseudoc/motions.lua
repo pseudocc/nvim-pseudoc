@@ -3,6 +3,7 @@ local M = {}
 local no_ts  = {
   sh = true,
   bash = true,
+  debchangelog = true,
 }
 
 local function indent_fn(i)

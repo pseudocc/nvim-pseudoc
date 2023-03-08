@@ -24,20 +24,34 @@ end
 function M.select_context(around)
   local curr = vim.fn.line('.')
   local indent = indent_fn(curr)
-  local builder = {}
+  local last = vim.fn.line('$')
 
   local i = 1
   while indent == BLANKLINE_INDENT_SENTINEL do
     if curr - i > 0 then
       indent = indent_fn(curr - i)
-    else
-      indent = 0
     end
+
+    if curr + i <= last then
+      local t = indent_fn(curr + i)
+      if indent == BLANKLINE_INDENT_SENTINEL or t > indent then
+        indent = t
+      end
+    end
+
+    if curr - i <= 0 and curr + i > last then
+      indent = 0
+      break
+    end
+
+    i = i + 1
   end
 
   if indent == 0 then
     return
   end
+
+  local builder = {}
 
   local k = 1
   while curr - k > 0 and indent_fn(curr - k) >= indent do
@@ -54,7 +68,6 @@ function M.select_context(around)
   end
 
   local j = 1
-  local last = vim.fn.line('$')
   while curr + j <= last and indent_fn(curr + j) >= indent do
     j = j + 1
   end

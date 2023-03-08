@@ -20,6 +20,10 @@ function M.select_context(around)
   local indent = indent_fn(curr)
   local builder = {}
 
+  if indent == 0 then
+    return
+  end
+
   local k = 1
   while curr - k > 0 and indent_fn(curr - k) >= indent do
     k = k + 1

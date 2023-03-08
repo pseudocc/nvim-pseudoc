@@ -6,9 +6,15 @@ local no_ts  = {
   debchangelog = true,
 }
 
+local BLANKLINE_INDENT_SENTINEL = 0x7fffffff
+
 local function indent_fn(i)
   local ft = vim.bo.filetype
   if no_ts[ft] then
+    local line_length = #vim.fn.getline(i)
+    if line_length == 0 then
+      return BLANKLINE_INDENT_SENTINEL
+    end
     return vim.fn.indent(i)
   end
   local ts_indent = require 'nvim-treesitter.indent'
@@ -19,6 +25,15 @@ function M.select_context(around)
   local curr = vim.fn.line('.')
   local indent = indent_fn(curr)
   local builder = {}
+
+  local i = 1
+  while indent == BLANKLINE_INDENT_SENTINEL do
+    if curr - i > 0 then
+      indent = indent_fn(curr - i)
+    else
+      indent = 0
+    end
+  end
 
   if indent == 0 then
     return

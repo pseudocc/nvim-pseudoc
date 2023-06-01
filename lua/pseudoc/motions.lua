@@ -90,4 +90,66 @@ function M.select_context(around)
   vim.cmd(table.concat(builder))
 end
 
+-- Inline motions
+-- Find the line that contains a pair of the given symbol downwards
+function M.arbitrary_motion(symbol, arround)
+  local line, match
+  local curr = vim.fn.line('.')
+  local last = vim.fn.line('$')
+  local col = vim.fn.col('.')
+
+  local builder = {}
+  local i = 0
+
+  while curr + i <= last do
+    line = vim.fn.getline(curr + i)
+    match = vim.fn.match(line, symbol, 0, 2) >= 0
+    if match then
+      break
+    end
+    i = i + 1
+    col = 1
+  end
+
+  if not match then
+    vim.notify('No match found', vim.log.levels.ERROR)
+    return
+  end
+
+  local count = 0
+  table.insert(builder, 'normal! ')
+  if i > 0 then
+    table.insert(builder, tostring(i) .. 'j')
+  end
+  if col == 1 then
+    table.insert(builder, '^')
+  else
+    for j = 0, col - 1 do
+      local c = line:sub(j, j)
+      if c == symbol then
+        count = count + 1
+      end
+    end
+  end
+
+  if line:sub(col, col) == symbol then
+    if count % 2 == 1 then
+      table.insert(builder, 'F' .. symbol)
+    end
+  elseif count > 0 then
+    table.insert(builder, 'F' .. symbol)
+  else
+    table.insert(builder, 'f' .. symbol)
+  end
+
+  if arround then
+    table.insert(builder, 'vf' .. symbol)
+  else
+    table.insert(builder, 'lvt' .. symbol)
+  end
+
+  vim.notify(table.concat(builder))
+  vim.cmd(table.concat(builder))
+end
+
 return M
